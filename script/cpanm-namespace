@@ -15,6 +15,7 @@ my %seen_dists; # key=distname, val=modulename
 for my $arg (@ARGV) {
     unless ($arg =~ /\A[A-Za-z0-9_]+(::[A-Za-z0-9_]+)*\z/) {
         push @new_argv, $arg;
+        next;
     }
     my $res = App::lcpan::Call::call_lcpan_script(
         argv => ["mods", "--namespace", $arg, "-l"],
