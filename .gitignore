@@ -1,0 +1,4 @@
+App-cpanm-namespace-*
+.build
+*~
+nytprof*

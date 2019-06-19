@@ -1,0 +1,53 @@
+#!perl
+
+# DATE
+# VERSION
+
+# FRAGMENT id=shcompgen-hint command=_cpanm-namespace
+
+use strict;
+use warnings;
+
+use App::lcpan::Call;
+
+my @new_argv;
+my %seen_dists; # key=distname, val=modulename
+for my $arg (@ARGV) {
+    unless ($arg =~ /\A[A-Za-z0-9_]+(::[A-Za-z0-9_]+)*\z/) {
+        push @new_argv, $arg;
+    }
+    my $res = App::lcpan::Call::call_lcpan_script(
+        argv => ["mods", "--namespace", $arg, "-l"],
+    );
+    unless ($res->[0] == 200) {
+        die "cpanm-namespace: Can't list modules with namespace '$arg': ".
+            "$res->[0] - $res->[1]\n";
+    }
+    my @mods;
+    for my $rec (@{$res->[2]}) {
+        next if $seen_dists{ $rec->{dist} };
+        push @mods, $rec->{module};
+        $seen_dists{ $rec->{dist} } = $rec->{module};
+    }
+    push @new_argv, @mods;
+}
+
+print join(" ", "cpanm", @new_argv), "\n" if $ENV{DEBUG};
+system {"cpanm"} "cpanm", @new_argv;
+
+# ABSTRACT: Install all modules from certain namespace from CPAN
+# PODNAME:
+
+=head1 DESCRIPTION
+
+L<cpanm-namespace> is a simplistic wrapper over L<cpanm>. This command:
+
+ % cpanm-namespace -n Calendar::Dates
+
+will cause B<cpanm-namespace> to search for modules under the namespace
+C<Calendar::Dates> (currently using L<lcpan>) and install them all using
+L<cpanm>.
+
+That's about it.
+
+=cut
